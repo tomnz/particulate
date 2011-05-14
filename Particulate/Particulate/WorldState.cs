@@ -7,6 +7,11 @@ using Particulate.Graphics;
 
 namespace Particulate
 {
+    public enum LineWidthMode
+    {
+        Fixed,
+        Velocity
+    }
     class WorldState
     {
         private WorldState()
@@ -14,6 +19,7 @@ namespace Particulate
             // Prevent instantiation
         }
 
+        // Helper members
         private static Random _rand = new Random();
         public static Random Rand
         {
@@ -70,7 +76,60 @@ namespace Particulate
             set { WorldState._wallCollide = value; }
         }
 
+        // Basic settings
+        private static int _screenWidth = 480;
+        public static int ScreenWidth
+        {
+            get { return WorldState._screenWidth; }
+            set { WorldState._screenWidth = value; }
+        }
+
+        private static int _screenHeight = 800;
+        public static int ScreenHeight
+        {
+            get { return WorldState._screenHeight; }
+            set { WorldState._screenHeight = value; }
+        }
+
+        private static int _numParticles = 50;
+        public static int NumParticles
+        {
+            get { return WorldState._numParticles; }
+            set { WorldState._numParticles = value; }
+        }
+
+        // Particle appearance
+        private static float _lineWidthMin = 1.0f;
+        public static float LineWidthMin
+        {
+            get { return WorldState._lineWidthMin; }
+            set { WorldState._lineWidthMin = value; }
+        }
+
+        private static float _lineWidthMax = 3.0f;
+        public static float LineWidthMax
+        {
+            get { return WorldState._lineWidthMax; }
+            set { WorldState._lineWidthMax = value; }
+        }
+
+        private static LineWidthMode _lineWidthMode = LineWidthMode.Velocity;
+        public static LineWidthMode LineWidthMode
+        {
+            get { return WorldState._lineWidthMode; }
+            set { WorldState._lineWidthMode = value; }
+        }
+
+
+
         // Flocking parameters
+        private static double _flockingForceStrength = 0.001;
+        public static double FlockingForceStrength
+        {
+            get { return WorldState._flockingForceStrength; }
+            set { WorldState._flockingForceStrength = value; }
+        }
+
         private static double _neighbourRadius = 100;
         public static double NeighbourRadius
         {
