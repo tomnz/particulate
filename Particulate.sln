@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Particulate", "Particulate\Particulate\Particulate.csproj", "{C33B6C77-862F-4CE7-A61F-39620A449F4A}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "ParticulateContent", "Particulate\ParticulateContent\ParticulateContent.contentproj", "{B811D6C9-D221-4974-A27C-3591C193D9EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Windows Phone = Debug|Windows Phone
+		Release|Windows Phone = Release|Windows Phone
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C33B6C77-862F-4CE7-A61F-39620A449F4A}.Debug|Windows Phone.ActiveCfg = Debug|Windows Phone
+		{C33B6C77-862F-4CE7-A61F-39620A449F4A}.Debug|Windows Phone.Build.0 = Debug|Windows Phone
+		{C33B6C77-862F-4CE7-A61F-39620A449F4A}.Debug|Windows Phone.Deploy.0 = Debug|Windows Phone
+		{C33B6C77-862F-4CE7-A61F-39620A449F4A}.Release|Windows Phone.ActiveCfg = Release|Windows Phone
+		{C33B6C77-862F-4CE7-A61F-39620A449F4A}.Release|Windows Phone.Build.0 = Release|Windows Phone
+		{C33B6C77-862F-4CE7-A61F-39620A449F4A}.Release|Windows Phone.Deploy.0 = Release|Windows Phone
+		{B811D6C9-D221-4974-A27C-3591C193D9EE}.Debug|Windows Phone.ActiveCfg = Debug|Windows Phone
+		{B811D6C9-D221-4974-A27C-3591C193D9EE}.Release|Windows Phone.ActiveCfg = Release|Windows Phone
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
