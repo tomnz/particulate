@@ -1,0 +1,5 @@
+syntax: glob
+Particulate.suo
+Particulate/Particulate/bin
+Particulate/Particulate/obj
+Particulate/ParticulateContent/obj
