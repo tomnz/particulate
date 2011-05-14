@@ -13,6 +13,8 @@ namespace Particulate.Graphics
 {
     class Particle : ISprite
     {
+        private static readonly double ATAN2_VERTICAL = 1.5708;
+
         private SimpleBody _body;
         internal SimpleBody Body
         {
@@ -29,13 +31,12 @@ namespace Particulate.Graphics
 
         public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, PrimitiveBatch primitiveBatch)
         {
-            float lineWidth = 1.0f;
-
-            List<Vector2> vertices = new List<Vector2>();
+            float lineWidth = GetLineWidth();
             float length = (_body.Position - _body.LastDrawnPosition).Length();
 
+            // Set up the transform matrix
             Vector2 trajectory = _body.Position - _body.LastDrawnPosition;
-            float angle = (float)(Math.Atan2(trajectory.Y, trajectory.X) - Math.Atan2(1, 0));
+            float angle = (float)(Math.Atan2(trajectory.Y, trajectory.X) - ATAN2_VERTICAL);
             Matrix transform = Matrix.Multiply(Matrix.CreateRotationZ(angle), Matrix.CreateTranslation(_body.LastDrawnPosition.X, _body.LastDrawnPosition.Y, 0));
 
 
@@ -57,6 +58,17 @@ namespace Particulate.Graphics
         public void Animate(double time)
         {
             _body.Animate(time);
+        }
+
+        private float GetLineWidth()
+        {
+            switch (WorldState.LineWidthMode)
+            {
+                case LineWidthMode.Velocity:
+                    return (float)((WorldState.MaxVel - _body.Velocity.Length()) / WorldState.MaxVel) * (WorldState.LineWidthMax - WorldState.LineWidthMin) + WorldState.LineWidthMin;
+                default:
+                    return WorldState.LineWidthMin;
+            }
         }
     }
 }

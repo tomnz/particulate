@@ -37,8 +37,8 @@ namespace Particulate
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferWidth = 480;
-            graphics.PreferredBackBufferHeight = 800;
+            graphics.PreferredBackBufferWidth = WorldState.ScreenWidth;
+            graphics.PreferredBackBufferHeight = WorldState.ScreenHeight;
             graphics.IsFullScreen = true;
 
             // Frame rate is 30 fps by default for Windows Phone.
@@ -64,11 +64,11 @@ namespace Particulate
             WorldState.WorldForces.Add(new WallForce(100, 1.5, 0.15));
             WorldState.WorldForces.Add(_fingerAttractor);
 
-            WorldState.WorldForces.Add(new FlockingForce(0.001));
+            WorldState.WorldForces.Add(new FlockingForce(WorldState.FlockingForceStrength));
 
             // Setup rendering
-            _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-            _lastFrame = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            _renderTarget = new RenderTarget2D(GraphicsDevice, WorldState.ScreenWidth, WorldState.ScreenHeight);
+            _lastFrame = new RenderTarget2D(GraphicsDevice, WorldState.ScreenWidth, WorldState.ScreenHeight);
 
             base.Initialize();
         }
@@ -85,9 +85,9 @@ namespace Particulate
             _uiFont = Content.Load<SpriteFont>("UIFont");
             _particleNormalTexture = Content.Load<Texture2D>("Particle4");
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < WorldState.NumParticles; i++)
             {
-                WorldState.Sprites.Add(new Particle(new Vector2(WorldState.Rand.Next(50, graphics.GraphicsDevice.Viewport.Width - 50), WorldState.Rand.Next(50, graphics.GraphicsDevice.Viewport.Height - 50)), _particleNormalTexture));
+                WorldState.Sprites.Add(new Particle(new Vector2(WorldState.Rand.Next(50, WorldState.ScreenWidth - 50), WorldState.Rand.Next(50, WorldState.ScreenHeight - 50)), _particleNormalTexture));
             }
         }
 
@@ -156,7 +156,7 @@ namespace Particulate
             // Render last frame into rt with transparency
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             if (_lastFrame != null)
-                spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.Width, WorldState.Height), new Color(0.8f, 0.8f, 0.8f));
+                spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.Width, WorldState.Height), new Color(0.88f, 0.8f, 0.6f));
             spriteBatch.End();
 
 
