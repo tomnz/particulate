@@ -123,7 +123,7 @@ namespace Particulate.Physics.Bodies
                         _velocity.X *= -1;
                     }
                     // Right wall
-                    if (_position.X > WorldState.Width)
+                    if (_position.X > WorldState.ScreenWidth)
                     {
                         _position.X -= (_position.X - _lastPosition.X);
                         _velocity.X *= -1;
@@ -135,7 +135,7 @@ namespace Particulate.Physics.Bodies
                         _velocity.Y *= -1;
                     }
                     // Bottom wall
-                    if (_position.Y > WorldState.Height)
+                    if (_position.Y > WorldState.ScreenHeight)
                     {
                         _position.Y -= (_position.Y - _lastPosition.Y);
                         _velocity.Y *= -1;

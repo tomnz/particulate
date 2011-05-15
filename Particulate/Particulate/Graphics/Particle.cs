@@ -15,18 +15,24 @@ namespace Particulate.Graphics
     {
         private static readonly double ATAN2_VERTICAL = 1.5708;
 
+        private ColorProvider _color;
+
         private SimpleBody _body;
         internal SimpleBody Body
         {
             get { return _body; }
         }
 
-        private Texture2D _texture;
-
-        public Particle(Vector2 initialPosition, Texture2D texture)
+        public Particle(Vector2 initialPosition)
         {
             _body = new SimpleBody(initialPosition);
-            _texture = texture;
+            _color = new ColorProvider(Color.White);
+        }
+
+        public Particle(Vector2 initialPosition, ColorProvider color)
+        {
+            _body = new SimpleBody(initialPosition);
+            _color = color;
         }
 
         public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, PrimitiveBatch primitiveBatch)
@@ -40,12 +46,12 @@ namespace Particulate.Graphics
             Matrix transform = Matrix.Multiply(Matrix.CreateRotationZ(angle), Matrix.CreateTranslation(_body.LastDrawnPosition.X, _body.LastDrawnPosition.Y, 0));
 
 
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), Color.White);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, length + lineWidth), transform), Color.White);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), Color.White);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), Color.White);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, -lineWidth), transform), Color.White);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), Color.White);
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), _color.GetColor());
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, length + lineWidth), transform), _color.GetColor());
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), _color.GetColor());
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), _color.GetColor());
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, -lineWidth), transform), _color.GetColor());
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), _color.GetColor());
 
             _body.LastDrawnPosition = _body.Position;
         }
@@ -58,6 +64,7 @@ namespace Particulate.Graphics
         public void Animate(double time)
         {
             _body.Animate(time);
+            _color.Update(time);
         }
 
         private float GetLineWidth()

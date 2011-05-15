@@ -27,26 +27,6 @@ namespace Particulate
         }
 
 
-        // Basic properties
-        private static int _width = 480;
-        public static int Width
-        {
-            get { return WorldState._width; }
-        }
-
-        private static int _height = 800;
-        public static int Height
-        {
-            get { return WorldState._height; }
-        }
-
-        private static double _maxVel = 10;
-        public static double MaxVel
-        {
-            get { return _maxVel; }
-            set { _maxVel = value; }
-        }
-
         // State
         private static List<ISprite> _sprites = new List<ISprite>();
         public static List<ISprite> Sprites
@@ -120,9 +100,22 @@ namespace Particulate
             set { WorldState._lineWidthMode = value; }
         }
 
+        private static double _colorRotateRate = 1;
+        public static double ColorRotateRate
+        {
+            get { return WorldState._colorRotateRate; }
+            set { WorldState._colorRotateRate = value; }
+        }
 
 
         // Flocking parameters
+        private static double _maxVel = 10;
+        public static double MaxVel
+        {
+            get { return _maxVel; }
+            set { _maxVel = value; }
+        }
+
         private static double _flockingForceStrength = 0.001;
         public static double FlockingForceStrength
         {

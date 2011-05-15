@@ -31,9 +31,9 @@ namespace Particulate.Physics.Forces
             Vector2 squareForce = new Vector2(0, 0);
 
             float leftDistance = ((float)_forceDistance - body.Position.X);
-            float rightDistance = (body.Position.X - (WorldState.Width - (float)_forceDistance));
+            float rightDistance = (body.Position.X - (WorldState.ScreenWidth - (float)_forceDistance));
             float topDistance = ((float)_forceDistance - body.Position.Y);
-            float bottomDistance = (body.Position.Y - (WorldState.Height - (float)_forceDistance));
+            float bottomDistance = (body.Position.Y - (WorldState.ScreenHeight - (float)_forceDistance));
             if (leftDistance > 0)
             {
                 force.X += leftDistance;

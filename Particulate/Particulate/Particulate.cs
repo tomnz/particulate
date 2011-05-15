@@ -21,9 +21,14 @@ namespace Particulate
     /// </summary>
     public class Particulate : Microsoft.Xna.Framework.Game
     {
+        // Members
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        PrimitiveBatch primitiveBatch;
+        
+        private SpriteBatch _spriteBatch;
+        private PrimitiveBatch _primitiveBatch;
+
+        private ColorProvider _fadeColor;
+
         private SpriteFont _uiFont;
         private Texture2D _particleNormalTexture;
 
@@ -43,6 +48,10 @@ namespace Particulate
 
             // Frame rate is 30 fps by default for Windows Phone.
             TargetElapsedTime = TimeSpan.FromTicks(333333);
+            IsFixedTimeStep = false;
+
+            //_fadeColor = new RotatingColorProvider(0.119, 0.278, 0.739, WorldState.ColorRotateRate);
+            _fadeColor = new RotatingColorProvider(0.119, 0.278, 0.95, WorldState.ColorRotateRate);
         }
 
         /// <summary>
@@ -79,15 +88,18 @@ namespace Particulate
         /// </summary>
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(this.GraphicsDevice);
-            primitiveBatch = new PrimitiveBatch(this.GraphicsDevice);
+            _spriteBatch = new SpriteBatch(this.GraphicsDevice);
+            _primitiveBatch = new PrimitiveBatch(this.GraphicsDevice);
             
             _uiFont = Content.Load<SpriteFont>("UIFont");
             _particleNormalTexture = Content.Load<Texture2D>("Particle4");
 
+            double h = 0;
+
             for (int i = 0; i < WorldState.NumParticles; i++)
             {
-                WorldState.Sprites.Add(new Particle(new Vector2(WorldState.Rand.Next(50, WorldState.ScreenWidth - 50), WorldState.Rand.Next(50, WorldState.ScreenHeight - 50)), _particleNormalTexture));
+                WorldState.Sprites.Add(new Particle(new Vector2(WorldState.Rand.Next(50, WorldState.ScreenWidth - 50), WorldState.Rand.Next(50, WorldState.ScreenHeight - 50)), new RotatingColorProvider(h, 0.7, 0.6, WorldState.ColorRotateRate)));
+                h += (0.2 / (double)WorldState.NumParticles);
             }
         }
 
@@ -136,6 +148,9 @@ namespace Particulate
                 sprite.Animate(frameTime);
             }
 
+            // Fade color
+            _fadeColor.Update(frameTime);
+
             base.Update(gameTime);
         }
 
@@ -154,38 +169,38 @@ namespace Particulate
             // Start rendering
 
             // Render last frame into rt with transparency
-            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             if (_lastFrame != null)
-                spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.Width, WorldState.Height), new Color(0.88f, 0.8f, 0.6f));
-            spriteBatch.End();
+                _spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), _fadeColor.GetColor());
+            _spriteBatch.End();
 
 
-            primitiveBatch.Begin(PrimitiveType.TriangleList);
+            _primitiveBatch.Begin(PrimitiveType.TriangleList);
             // Render items into rt
             foreach (ISprite sprite in WorldState.Sprites)
             {
-                sprite.Draw(graphics, spriteBatch, primitiveBatch);
+                sprite.Draw(graphics, _spriteBatch, _primitiveBatch);
             }
 
-            primitiveBatch.End();
+            _primitiveBatch.End();
             
             // Save rt as "last frame"
             GraphicsDevice.SetRenderTarget(_lastFrame);
-            spriteBatch.Begin();
-            spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.Width, WorldState.Height), Color.White);
-            spriteBatch.End();
+            _spriteBatch.Begin();
+            _spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
+            _spriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
             
             // Render rt into backbuffer
-            spriteBatch.Begin();
-            spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.Width, WorldState.Height), Color.White);
+            _spriteBatch.Begin();
+            _spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
             
             // Display memory
             const string current = "ApplicationCurrentMemoryUsage";
             long currentBytes = (long)DeviceExtendedProperties.GetValue(current);
-            spriteBatch.DrawString(_uiFont, currentBytes.ToString(), new Vector2(10, 10), Color.White);
+            _spriteBatch.DrawString(_uiFont, currentBytes.ToString(), new Vector2(10, 10), Color.White);
 
-            spriteBatch.End();
+            _spriteBatch.End();
             
             base.Draw(gameTime);
         }
