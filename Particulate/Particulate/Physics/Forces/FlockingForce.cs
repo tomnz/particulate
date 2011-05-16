@@ -12,6 +12,13 @@ namespace Particulate.Physics.Forces
     {
         private double _strength = 1;
 
+        private double _separationStrength = 1;
+        public double SeparationStrength
+        {
+            get { return _separationStrength; }
+            set { _separationStrength = value; }
+        }
+
         public FlockingForce()
         {
         }
@@ -50,7 +57,7 @@ namespace Particulate.Physics.Forces
         {
             Vector2 force = new Vector2(0, 0);
 
-            force += Vector2.Multiply(Separate(neighbours, body), (float)WorldState.FlockingSeparationWeight);
+            force += Vector2.Multiply(Separate(neighbours, body), (float)(WorldState.FlockingSeparationWeight * _separationStrength));
             force += Vector2.Multiply(Align(neighbours, body), (float)WorldState.FlockingAlignWeight);
             force += Vector2.Multiply(Cohere(neighbours, body), (float)WorldState.FlockingCohereWeight);
 
