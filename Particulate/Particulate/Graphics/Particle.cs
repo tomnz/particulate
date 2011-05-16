@@ -39,6 +39,7 @@ namespace Particulate.Graphics
         {
             float lineWidth = GetLineWidth();
             float length = (_body.Position - _body.LastDrawnPosition).Length();
+            Color fadedColor = Utility.ColorMultiply(WorldState.FadeColor.GetColor(), _color.GetColor());
 
             // Set up the transform matrix
             Vector2 trajectory = _body.Position - _body.LastDrawnPosition;
@@ -48,9 +49,9 @@ namespace Particulate.Graphics
 
             primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), _color.GetColor());
             primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, length + lineWidth), transform), _color.GetColor());
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), _color.GetColor());
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), _color.GetColor());
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, -lineWidth), transform), _color.GetColor());
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), fadedColor);
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), fadedColor);
+            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, -lineWidth), transform), fadedColor);
             primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), _color.GetColor());
 
             _body.LastDrawnPosition = _body.Position;

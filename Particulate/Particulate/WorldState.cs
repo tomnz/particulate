@@ -107,6 +107,13 @@ namespace Particulate
             set { WorldState._colorRotateRate = value; }
         }
 
+        private static ColorProvider _fadeColor = new RotatingColorProvider(0.119, 0.278, 0.77, WorldState.ColorRotateRate);
+        public static ColorProvider FadeColor
+        {
+            get { return _fadeColor; }
+            set { _fadeColor = value; }
+        }
+
 
         // Flocking parameters
         private static double _maxVel = 10;

@@ -27,8 +27,6 @@ namespace Particulate
         private SpriteBatch _spriteBatch;
         private PrimitiveBatch _primitiveBatch;
 
-        private ColorProvider _fadeColor;
-
         private SpriteFont _uiFont;
         private Texture2D _particleNormalTexture;
 
@@ -36,6 +34,11 @@ namespace Particulate
         private RenderTarget2D _renderTarget;
 
         private DistanceAttractor _fingerAttractor;
+        private DistanceAttractor _fingerAttractor1;
+        private DistanceAttractor _fingerAttractor2;
+        private FlockingForce _flockingForceRef;
+        private RandomForce _randomForceRef;
+        private bool _activateRandomForce = true;
 
         public Particulate()
         {
@@ -49,9 +52,6 @@ namespace Particulate
             // Frame rate is 30 fps by default for Windows Phone.
             TargetElapsedTime = TimeSpan.FromTicks(333333);
             IsFixedTimeStep = false;
-
-            //_fadeColor = new RotatingColorProvider(0.119, 0.278, 0.739, WorldState.ColorRotateRate);
-            _fadeColor = new RotatingColorProvider(0.119, 0.278, 0.95, WorldState.ColorRotateRate);
         }
 
         /// <summary>
@@ -66,6 +66,8 @@ namespace Particulate
 
             // Setup world
             _fingerAttractor = new DistanceAttractor(new Vector2(), 0, 100);
+            _fingerAttractor1 = new DistanceAttractor(new Vector2(), 0, 100);
+            _fingerAttractor2 = new DistanceAttractor(new Vector2(), 0, 100);
 
             WorldState.WorldForces.Clear();
             //WorldState.WorldForces.Add(new DirectionalForce(new Vector2(0, 100)));
@@ -73,7 +75,11 @@ namespace Particulate
             WorldState.WorldForces.Add(new WallForce(100, 1.5, 0.15));
             WorldState.WorldForces.Add(_fingerAttractor);
 
-            WorldState.WorldForces.Add(new FlockingForce(WorldState.FlockingForceStrength));
+            _flockingForceRef = new FlockingForce(WorldState.FlockingForceStrength);
+            WorldState.WorldForces.Add(_flockingForceRef);
+
+            _randomForceRef = new RandomForce(150, 10000, 0);
+            WorldState.WorldForces.Add(_randomForceRef);
 
             // Setup rendering
             _renderTarget = new RenderTarget2D(GraphicsDevice, WorldState.ScreenWidth, WorldState.ScreenHeight);
@@ -98,7 +104,9 @@ namespace Particulate
 
             for (int i = 0; i < WorldState.NumParticles; i++)
             {
-                WorldState.Sprites.Add(new Particle(new Vector2(WorldState.Rand.Next(50, WorldState.ScreenWidth - 50), WorldState.Rand.Next(50, WorldState.ScreenHeight - 50)), new RotatingColorProvider(h, 0.7, 0.6, WorldState.ColorRotateRate)));
+                Particle p = new Particle(new Vector2(WorldState.Rand.Next(50, WorldState.ScreenWidth - 50), WorldState.Rand.Next(50, WorldState.ScreenHeight - 50)), new RotatingColorProvider(h, 0.7, 0.6, WorldState.ColorRotateRate));
+                p.Body.Forces.Add(i % 2 == 0 ? _fingerAttractor1 : _fingerAttractor2);
+                WorldState.Sprites.Add(p);
                 h += (0.2 / (double)WorldState.NumParticles);
             }
         }
@@ -125,14 +133,61 @@ namespace Particulate
 
             // Touch attractor
             TouchCollection touches = TouchPanel.GetState();
-            if (touches.Count > 0)
+            if (touches.Count == 1)
             {
+                // Single finger attractor
                 _fingerAttractor.AttractorPoint = touches[0].Position;
                 _fingerAttractor.Attraction = 1;
+
+                // Disable other effects
+                _fingerAttractor1.Attraction = 0;
+                _fingerAttractor2.Attraction = 0;
+                _flockingForceRef.SeparationStrength = 1;
+                _randomForceRef.Strength = 0;
+                _activateRandomForce = true;
+            }
+            else if (touches.Count == 2)
+            {
+                // Split finger attractors
+                _fingerAttractor1.AttractorPoint = touches[0].Position;
+                _fingerAttractor2.AttractorPoint = touches[1].Position;
+                _fingerAttractor1.Attraction = 1;
+                _fingerAttractor2.Attraction = 1;
+
+                // Disable other effects
+                _fingerAttractor.Attraction = 0;
+                _flockingForceRef.SeparationStrength = 1;
+                _randomForceRef.Strength = 0;
+                _activateRandomForce = true;
+            }
+            else if (touches.Count == 3)
+            {
+                // Go crazy
+                _flockingForceRef.SeparationStrength = 10;
+                if (_activateRandomForce)
+                {
+                    _randomForceRef.Strength = 1;
+                    _activateRandomForce = false;
+                }
+                else
+                {
+                    _randomForceRef.Strength = 0;
+                }
+
+                // Disable other effects
+                _fingerAttractor.Attraction = 0;
+                _fingerAttractor1.Attraction = 0;
+                _fingerAttractor2.Attraction = 0;
             }
             else
             {
+                // Disable all effects
                 _fingerAttractor.Attraction = 0;
+                _fingerAttractor1.Attraction = 0;
+                _fingerAttractor2.Attraction = 0;
+                _flockingForceRef.SeparationStrength = 1;
+                _randomForceRef.Strength = 0;
+                _activateRandomForce = true;
             }
 
             // Prepare step
@@ -149,7 +204,7 @@ namespace Particulate
             }
 
             // Fade color
-            _fadeColor.Update(frameTime);
+            WorldState.FadeColor.Update(frameTime);
 
             base.Update(gameTime);
         }
@@ -171,7 +226,7 @@ namespace Particulate
             // Render last frame into rt with transparency
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             if (_lastFrame != null)
-                _spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), _fadeColor.GetColor());
+                _spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), WorldState.FadeColor.GetColor());
             _spriteBatch.End();
 
 
