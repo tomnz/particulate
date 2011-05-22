@@ -19,6 +19,10 @@ namespace Particulate
             // Prevent instantiation
         }
 
+        // Single Particulate reference
+        public static Particulate Program { get; set; }
+        
+
         // Helper members
         private static Random _rand = new Random();
         public static Random Rand
@@ -71,11 +75,11 @@ namespace Particulate
             set { WorldState._screenHeight = value; }
         }
 
-        private static int _numParticles = 50;
+        private static int _numParticles;
         public static int NumParticles
         {
             get { return WorldState._numParticles; }
-            set { WorldState._numParticles = value; }
+            set { WorldState._numParticles = value; Program.RefreshParticleCount(); }
         }
 
         // Particle appearance

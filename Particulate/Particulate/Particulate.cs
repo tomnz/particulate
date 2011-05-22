@@ -40,14 +40,23 @@ namespace Particulate
         private RandomForce _randomForceRef;
         private bool _activateRandomForce = true;
 
+        TimeSpan fpsElapsedTime = TimeSpan.Zero;
+        int fpsFrames = 0;
+        double fpsFrameRate = 0;
+
         public Particulate()
         {
+            // Tell the state we exist
+            WorldState.Program = this;
+
+            // Setup graphics
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
             graphics.PreferredBackBufferWidth = WorldState.ScreenWidth;
             graphics.PreferredBackBufferHeight = WorldState.ScreenHeight;
             graphics.IsFullScreen = true;
+            graphics.PreferMultiSampling = false;
 
             // Frame rate is 30 fps by default for Windows Phone.
             TargetElapsedTime = TimeSpan.FromTicks(333333);
@@ -100,14 +109,28 @@ namespace Particulate
             _uiFont = Content.Load<SpriteFont>("UIFont");
             _particleNormalTexture = Content.Load<Texture2D>("Particle4");
 
-            double h = 0;
+            // Spawn particles
+            WorldState.NumParticles = 60;
+        }
 
-            for (int i = 0; i < WorldState.NumParticles; i++)
+        /// <summary>
+        /// Balances the number of active particles to match WorldState.NumParticles
+        /// </summary>
+        public void RefreshParticleCount()
+        {
+            // Add new particles
+            double h = WorldState.Sprites.Count;
+            while (WorldState.Sprites.Count < WorldState.NumParticles)
             {
                 Particle p = new Particle(new Vector2(WorldState.Rand.Next(50, WorldState.ScreenWidth - 50), WorldState.Rand.Next(50, WorldState.ScreenHeight - 50)), new RotatingColorProvider(h, 0.7, 0.6, WorldState.ColorRotateRate));
-                p.Body.Forces.Add(i % 2 == 0 ? _fingerAttractor1 : _fingerAttractor2);
+                p.Body.Forces.Add(WorldState.Sprites.Count % 2 == 0 ? _fingerAttractor1 : _fingerAttractor2);
                 WorldState.Sprites.Add(p);
                 h += (0.2 / (double)WorldState.NumParticles);
+            }
+            // Remove excess particles
+            while (WorldState.Sprites.Count > WorldState.NumParticles)
+            {
+                WorldState.Sprites.RemoveAt(WorldState.Sprites.Count - 1);
             }
         }
 
@@ -206,6 +229,16 @@ namespace Particulate
             // Fade color
             WorldState.FadeColor.Update(frameTime);
 
+            // Calculate frame rate
+            fpsElapsedTime += gameTime.ElapsedGameTime;
+            fpsFrames++;
+            if (fpsElapsedTime > TimeSpan.FromSeconds(1))
+            {
+                fpsFrameRate = (double)fpsFrames / fpsElapsedTime.TotalSeconds;
+                fpsFrames = 0;
+                fpsElapsedTime = TimeSpan.Zero;
+            }
+
             base.Update(gameTime);
         }
 
@@ -253,7 +286,8 @@ namespace Particulate
             // Display memory
             const string current = "ApplicationCurrentMemoryUsage";
             long currentBytes = (long)DeviceExtendedProperties.GetValue(current);
-            _spriteBatch.DrawString(_uiFont, currentBytes.ToString(), new Vector2(10, 10), Color.White);
+            //_spriteBatch.DrawString(_uiFont, currentBytes.ToString(), new Vector2(10, 10), Color.White);
+            _spriteBatch.DrawString(_uiFont, fpsFrameRate.ToString("0.0"), new Vector2(10, 10), Color.White);
 
             _spriteBatch.End();
             
