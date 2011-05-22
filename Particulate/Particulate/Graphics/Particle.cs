@@ -15,6 +15,10 @@ namespace Particulate.Graphics
     {
         private static readonly double ATAN2_VERTICAL = 1.5708;
 
+        private Vector2 _lastLeftTip;
+        private Vector2 _lastRightTip;
+        private bool _drawnOnce = false;
+
         private ColorProvider _color;
 
         private SimpleBody _body;
@@ -46,13 +50,25 @@ namespace Particulate.Graphics
             float angle = (float)(Math.Atan2(trajectory.Y, trajectory.X) - ATAN2_VERTICAL);
             Matrix transform = Matrix.Multiply(Matrix.CreateRotationZ(angle), Matrix.CreateTranslation(_body.LastDrawnPosition.X, _body.LastDrawnPosition.Y, 0));
 
+            Vector2 newLeftTip = Vector2.Transform(new Vector2(-lineWidth, length), transform);
+            Vector2 newRightTip = Vector2.Transform(new Vector2(lineWidth, length), transform);
 
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), _color.GetColor());
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, length + lineWidth), transform), _color.GetColor());
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), fadedColor);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(-lineWidth, -lineWidth), transform), fadedColor);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, -lineWidth), transform), fadedColor);
-            primitiveBatch.AddVertex(Vector2.Transform(new Vector2(lineWidth, length + lineWidth), transform), _color.GetColor());
+            if (_drawnOnce)
+            {
+                primitiveBatch.AddVertex(newRightTip, _color.GetColor());
+                primitiveBatch.AddVertex(newLeftTip, _color.GetColor());
+                primitiveBatch.AddVertex(_lastLeftTip, fadedColor);
+                primitiveBatch.AddVertex(_lastLeftTip, fadedColor);
+                primitiveBatch.AddVertex(_lastRightTip, fadedColor);
+                primitiveBatch.AddVertex(newRightTip, _color.GetColor());
+            }
+            else
+            {
+                _drawnOnce = true;
+            }
+            
+            _lastLeftTip = newLeftTip;
+            _lastRightTip = newRightTip;
 
             _body.LastDrawnPosition = _body.Position;
         }
