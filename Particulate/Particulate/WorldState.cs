@@ -31,6 +31,21 @@ namespace Particulate
         }
 
 
+        // UI state
+        private static bool _showAbout = false;
+        public static bool ShowAbout
+        {
+            get { return WorldState._showAbout; }
+            set { WorldState._showAbout = value; }
+        }
+
+        private static bool _paused = false;
+        public static bool Paused
+        {
+            get { return WorldState._paused; }
+            set { WorldState._paused = value; }
+        }
+
         // State
         private static List<ISprite> _sprites = new List<ISprite>();
         public static List<ISprite> Sprites

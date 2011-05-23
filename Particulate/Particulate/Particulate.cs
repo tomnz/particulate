@@ -27,8 +27,11 @@ namespace Particulate
         private SpriteBatch _spriteBatch;
         private PrimitiveBatch _primitiveBatch;
 
+#if DEBUG
         private SpriteFont _uiFont;
-        private Texture2D _particleNormalTexture;
+#endif
+        private Texture2D _aboutTexture;
+        private Texture2D _aboutIconTexture;
 
         private RenderTarget2D _lastFrame;
         private RenderTarget2D _renderTarget;
@@ -39,6 +42,8 @@ namespace Particulate
         private FlockingForce _flockingForceRef;
         private RandomForce _randomForceRef;
         private bool _activateRandomForce = true;
+
+        private bool _touchActive = false;
 
         TimeSpan fpsElapsedTime = TimeSpan.Zero;
         int fpsFrames = 0;
@@ -59,7 +64,7 @@ namespace Particulate
             graphics.PreferMultiSampling = false;
 
             // Frame rate is 30 fps by default for Windows Phone.
-            TargetElapsedTime = TimeSpan.FromTicks(333333);
+            //TargetElapsedTime = TimeSpan.FromTicks(333333);
             IsFixedTimeStep = false;
         }
 
@@ -106,8 +111,11 @@ namespace Particulate
             _spriteBatch = new SpriteBatch(this.GraphicsDevice);
             _primitiveBatch = new PrimitiveBatch(this.GraphicsDevice);
             
+#if DEBUG
             _uiFont = Content.Load<SpriteFont>("UIFont");
-            _particleNormalTexture = Content.Load<Texture2D>("Particle4");
+#endif
+            _aboutTexture = Content.Load<Texture2D>("About");
+            _aboutIconTexture = Content.Load<Texture2D>("AboutIcon");
 
             // Spawn particles
             WorldState.NumParticles = 60;
@@ -156,78 +164,113 @@ namespace Particulate
 
             // Touch attractor
             TouchCollection touches = TouchPanel.GetState();
-            if (touches.Count == 1)
+            if (WorldState.ShowAbout)
             {
-                // Single finger attractor
-                _fingerAttractor.AttractorPoint = touches[0].Position;
-                _fingerAttractor.Attraction = 1;
-
-                // Disable other effects
-                _fingerAttractor1.Attraction = 0;
-                _fingerAttractor2.Attraction = 0;
-                _flockingForceRef.SeparationStrength = 1;
-                _randomForceRef.Strength = 0;
-                _activateRandomForce = true;
-            }
-            else if (touches.Count == 2)
-            {
-                // Split finger attractors
-                _fingerAttractor1.AttractorPoint = touches[0].Position;
-                _fingerAttractor2.AttractorPoint = touches[1].Position;
-                _fingerAttractor1.Attraction = 1;
-                _fingerAttractor2.Attraction = 1;
-
-                // Disable other effects
-                _fingerAttractor.Attraction = 0;
-                _flockingForceRef.SeparationStrength = 1;
-                _randomForceRef.Strength = 0;
-                _activateRandomForce = true;
-            }
-            else if (touches.Count == 3)
-            {
-                // Go crazy
-                _flockingForceRef.SeparationStrength = 10;
-                if (_activateRandomForce)
+                if (touches.Count > 0 && !_touchActive)
                 {
-                    _randomForceRef.Strength = 1;
-                    _activateRandomForce = false;
+                    WorldState.ShowAbout = false;
+                    WorldState.Paused = false;
                 }
-                else
+                else if (touches.Count == 0)
                 {
-                    _randomForceRef.Strength = 0;
+                    _touchActive = false;
                 }
-
-                // Disable other effects
-                _fingerAttractor.Attraction = 0;
-                _fingerAttractor1.Attraction = 0;
-                _fingerAttractor2.Attraction = 0;
             }
             else
             {
-                // Disable all effects
-                _fingerAttractor.Attraction = 0;
-                _fingerAttractor1.Attraction = 0;
-                _fingerAttractor2.Attraction = 0;
-                _flockingForceRef.SeparationStrength = 1;
-                _randomForceRef.Strength = 0;
-                _activateRandomForce = true;
+                if (touches.Count == 1)
+                {
+                    // About
+                    if (touches[0].Position.X < 50 && touches[0].Position.Y < 50 && !_touchActive)
+                    {
+                        WorldState.ShowAbout = true;
+                        WorldState.Paused = true;
+                        _touchActive = true;
+                        return;
+                    }
+
+                    // Single finger attractor
+                    _fingerAttractor.AttractorPoint = touches[0].Position;
+                    _fingerAttractor.Attraction = 1;
+
+                    // Disable other effects
+                    _fingerAttractor1.Attraction = 0;
+                    _fingerAttractor2.Attraction = 0;
+                    _flockingForceRef.SeparationStrength = 1;
+                    _randomForceRef.Strength = 0;
+                    _activateRandomForce = true;
+                }
+                else if (touches.Count == 2)
+                {
+                    // Split finger attractors
+                    _fingerAttractor1.AttractorPoint = touches[0].Position;
+                    _fingerAttractor2.AttractorPoint = touches[1].Position;
+                    _fingerAttractor1.Attraction = 1;
+                    _fingerAttractor2.Attraction = 1;
+
+                    // Disable other effects
+                    _fingerAttractor.Attraction = 0;
+                    _flockingForceRef.SeparationStrength = 1;
+                    _randomForceRef.Strength = 0;
+                    _activateRandomForce = true;
+                }
+                else if (touches.Count == 3)
+                {
+                    // Go crazy
+                    _flockingForceRef.SeparationStrength = 10;
+                    if (_activateRandomForce)
+                    {
+                        _randomForceRef.Strength = 1;
+                        _activateRandomForce = false;
+                    }
+                    else
+                    {
+                        _randomForceRef.Strength = 0;
+                    }
+
+                    // Disable other effects
+                    _fingerAttractor.Attraction = 0;
+                    _fingerAttractor1.Attraction = 0;
+                    _fingerAttractor2.Attraction = 0;
+                }
+                else
+                {
+                    // Disable all effects
+                    _fingerAttractor.Attraction = 0;
+                    _fingerAttractor1.Attraction = 0;
+                    _fingerAttractor2.Attraction = 0;
+                    _flockingForceRef.SeparationStrength = 1;
+                    _randomForceRef.Strength = 0;
+                    _activateRandomForce = true;
+                    _touchActive = false;
+                }
+
+                if (touches.Count > 0)
+                {
+                    _touchActive = true;
+                }
             }
+
 
             // Prepare step
             double frameTime = gameTime.ElapsedGameTime.TotalSeconds * WorldState.TimeFactor;
-            foreach (ISprite sprite in WorldState.Sprites)
-            {
-                sprite.PrepareAnimate(frameTime);
-            }
 
-            // Update step
-            foreach (ISprite sprite in WorldState.Sprites)
+            if (!WorldState.Paused)
             {
-                sprite.Animate(frameTime);
-            }
+                foreach (ISprite sprite in WorldState.Sprites)
+                {
+                    sprite.PrepareAnimate(frameTime);
+                }
 
-            // Fade color
-            WorldState.FadeColor.Update(frameTime);
+                // Update step
+                foreach (ISprite sprite in WorldState.Sprites)
+                {
+                    sprite.Animate(frameTime);
+                }
+
+                // Fade color
+                WorldState.FadeColor.Update(frameTime);
+            }
 
             // Calculate frame rate
             fpsElapsedTime += gameTime.ElapsedGameTime;
@@ -239,7 +282,7 @@ namespace Particulate
                 fpsElapsedTime = TimeSpan.Zero;
             }
 
-            base.Update(gameTime);
+            //base.Update(gameTime);
         }
 
         /// <summary>
@@ -250,47 +293,60 @@ namespace Particulate
         {
             GraphicsDevice.Clear(Color.Black);
 
-            // Clear rt
-            GraphicsDevice.SetRenderTarget(_renderTarget);
-            GraphicsDevice.Clear(Color.Black);
-
-            // Start rendering
-
-            // Render last frame into rt with transparency
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
-            if (_lastFrame != null)
-                _spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), WorldState.FadeColor.GetColor());
-            _spriteBatch.End();
-
-
-            _primitiveBatch.Begin(PrimitiveType.TriangleList);
-            // Render items into rt
-            foreach (ISprite sprite in WorldState.Sprites)
+            if (WorldState.ShowAbout)
             {
-                sprite.Draw(graphics, _spriteBatch, _primitiveBatch);
+                _spriteBatch.Begin();
+                _spriteBatch.Draw(_aboutTexture, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
+                _spriteBatch.End();
+            }
+            else
+            {
+                // Clear rt
+                GraphicsDevice.SetRenderTarget(_renderTarget);
+                GraphicsDevice.Clear(Color.Black);
+
+                // Start rendering
+
+                // Render last frame into rt with transparency
+                _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+                if (_lastFrame != null)
+                    _spriteBatch.Draw(_lastFrame, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), WorldState.FadeColor.GetColor());
+                _spriteBatch.End();
+
+
+                _primitiveBatch.Begin(PrimitiveType.TriangleList);
+                // Render items into rt
+                foreach (ISprite sprite in WorldState.Sprites)
+                {
+                    sprite.Draw(graphics, _spriteBatch, _primitiveBatch);
+                }
+
+                _primitiveBatch.End();
+
+                // Save rt as "last frame"
+                GraphicsDevice.SetRenderTarget(_lastFrame);
+                _spriteBatch.Begin();
+                _spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
+                _spriteBatch.End();
+                GraphicsDevice.SetRenderTarget(null);
+
+                // Render rt into backbuffer
+                _spriteBatch.Begin();
+                _spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
+
+                // Display memory
+#if DEBUG
+                const string current = "ApplicationCurrentMemoryUsage";
+                long currentBytes = (long)DeviceExtendedProperties.GetValue(current);
+                //_spriteBatch.DrawString(_uiFont, currentBytes.ToString(), new Vector2(10, 10), Color.White);
+                _spriteBatch.DrawString(_uiFont, fpsFrameRate.ToString("0.0"), new Vector2(10, 10), Color.White);
+#endif
+
+                _spriteBatch.Draw(_aboutIconTexture, new Rectangle(0, 0, _aboutIconTexture.Width, _aboutIconTexture.Height), Color.White);
+
+                _spriteBatch.End();
             }
 
-            _primitiveBatch.End();
-            
-            // Save rt as "last frame"
-            GraphicsDevice.SetRenderTarget(_lastFrame);
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
-            _spriteBatch.End();
-            GraphicsDevice.SetRenderTarget(null);
-            
-            // Render rt into backbuffer
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, WorldState.ScreenWidth, WorldState.ScreenHeight), Color.White);
-            
-            // Display memory
-            const string current = "ApplicationCurrentMemoryUsage";
-            long currentBytes = (long)DeviceExtendedProperties.GetValue(current);
-            //_spriteBatch.DrawString(_uiFont, currentBytes.ToString(), new Vector2(10, 10), Color.White);
-            _spriteBatch.DrawString(_uiFont, fpsFrameRate.ToString("0.0"), new Vector2(10, 10), Color.White);
-
-            _spriteBatch.End();
-            
             base.Draw(gameTime);
         }
     }
